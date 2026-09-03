@@ -448,6 +448,28 @@ The dashboard provides business users with a curated analytical view without req
 
 ---
 
+## Implementation Screenshots
+
+### Fabric Data Pipeline
+![Fabric Data Pipeline](screenshots/fabric_pipeline.png)
+
+### Bronze Layer
+![Bronze Layer](screenshots/bronze_layer.png)
+
+### Silver Orders
+![Silver Orders](screenshots/silver_orders.png)
+
+### Silver Inventory
+![Silver Inventory](screenshots/silver_inventory.png)
+
+### Gold KPI Layer
+![Gold KPIs](screenshots/gold_kpis.png)
+
+### Power BI Dashboard
+![Power BI Dashboard](screenshots/powerbi_dashboard.png)
+
+---
+
 # End-to-End Workflow
 
 ```mermaid
