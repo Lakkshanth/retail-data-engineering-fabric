@@ -1,6 +1,4 @@
-# Retail Data Engineering & Analytics — Microsoft Fabric
-
-An end-to-end retail data engineering pipeline built with **Microsoft Fabric, PySpark, Delta Lake, Medallion Architecture, and Power BI**.
+An end-to-end retail data engineering pipeline built using **Microsoft Fabric, PySpark, Delta Lake, Medallion Architecture, and Power BI**.
 
 The project ingests retail data from **CSV, Excel, and JSON** sources, applies data-quality transformations, integrates the resulting datasets, and produces business-ready KPIs for analytical reporting.
 
@@ -316,7 +314,7 @@ OrderID
 ```
 
 A **LEFT JOIN** is used so that orders without return records remain in the enriched dataset.
-
+```markdown
 ### Orders + Inventory
 
 Orders are joined with Inventory using:
@@ -377,7 +375,7 @@ The Gold layer produces the following metrics:
 | Average Order Value | Average order amount |
 | Total Stock | Inventory quantity |
 | Average Cost | Average product cost |
-| Net Profit | Project-defined profitability metric |
+| Net Profit | Total Revenue − Total COGS |
 
 ### Return Rate
 
@@ -396,8 +394,22 @@ SUM(OrderAmount)
 ### Average Order Value
 
 ```text
-Average Order Value =
-AVG(OrderAmount)
+### Average Order Value
+
+Average Order Value = AVG(OrderAmount)
+
+
+### Cost of Goods Sold
+
+COGS = SUM(Quantity × Avg_Cost)
+
+
+### Net Profit
+
+Net Profit = Total Revenue − Total COGS
+
+The profitability calculation uses ordered quantity and product cost
+rather than current inventory stock.
 ```
 
 ---
@@ -502,7 +514,7 @@ retail-data-engineering-fabric/
 ├── README.md
 ├── .gitignore
 │
-├── architecture/
+├── Architecture/
 │   └── architecture.png
 │
 ├── notebooks/
@@ -511,22 +523,16 @@ retail-data-engineering-fabric/
 │   ├── 03_inventory_silver.py
 │   └── 04_gold_kpis.py
 │
-├── pipeline/
-│   └── README.md
-│
-├── screenshots/
-│   ├── fabric_pipeline.png
-│   ├── bronze_layer.png
-│   ├── silver_orders.png
-│   ├── silver_inventory.png
-│   ├── gold_kpis.png
-│   └── powerbi_dashboard.png
-│
-├── powerbi/
-│   └── README.md
-│
-└── data/
-    └── README.md
+└── Screenshots/
+    ├── fabric_pipeline.png
+    ├── bronze_orders.png
+    ├── bronze_returns.png
+    ├── bronze_inventory.png
+    ├── silver_orders.png
+    ├── silver_returns.png
+    ├── silver_inventory.png
+    ├── gold_kpis.png
+    └── powerbi_dashboard.png
 ```
 
 ---
