@@ -453,11 +453,20 @@ The dashboard provides business users with a curated analytical view without req
 ### Fabric Data Pipeline
 ![Fabric Data Pipeline](screenshots/fabric_pipeline.png)
 
-### Bronze Layer
-![Bronze Layer](screenshots/bronze_layer.png)
+### Bronze Orders
+![Bronze Orders](screenshots/bronze_orders.png)
+
+### Bronze Returns
+![Bronze Returns](screenshots/bronze_returns.png)
+
+### Bronze Inventory
+![Bronze Inventory](screenshots/bronze_inventory.png)
 
 ### Silver Orders
 ![Silver Orders](screenshots/silver_orders.png)
+
+### Silver Returns
+![Silver Returns](screenshots/silver_returns.png)
 
 ### Silver Inventory
 ![Silver Inventory](screenshots/silver_inventory.png)
