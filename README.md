@@ -1,492 +1,471 @@
-# 🛒 Retail Data Quality and Profitability Analysis
+# Retail Data Engineering & Analytics — Microsoft Fabric
 
-An end-to-end **retail data engineering project** built using **Microsoft Fabric, PySpark, Delta Lake, Medallion Architecture, and Power BI**.
+An end-to-end retail data engineering pipeline built with **Microsoft Fabric, PySpark, Delta Lake, Medallion Architecture, and Power BI**.
 
-This project demonstrates how heterogeneous and messy retail data from **CSV, Excel, and JSON** sources can be ingested, cleaned, transformed, integrated, and converted into business-ready analytics.
+The project ingests retail data from **CSV, Excel, and JSON** sources, applies data-quality transformations, integrates the resulting datasets, and produces business-ready KPIs for analytical reporting.
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 
-Retail organizations often receive data from multiple systems in different formats. The data may contain inconsistent column names, date formats, currencies, missing values, duplicate records, invalid emails, and inconsistent categorical values.
+Retail data commonly arrives from multiple systems with inconsistent formats, schemas, data types, and values.
 
-This project solves these challenges by implementing an end-to-end data engineering pipeline using **Microsoft Fabric**.
+This project demonstrates a complete data engineering workflow for transforming this raw data into reliable analytical datasets.
 
-The pipeline follows the **Medallion Architecture**:
+The pipeline implements:
 
-```text
-             SOURCE DATA
-                  │
-       ┌──────────┼──────────┐
-       │          │          │
-     Orders     Returns    Inventory
-      CSV        Excel        JSON
-       │          │          │
-       └──────────┼──────────┘
-                  │
-                  ▼
-       ┌─────────────────────┐
-       │  FABRIC DATA        │
-       │     PIPELINE        │
-       │    Copy Data        │
-       └──────────┬──────────┘
-                  │
-                  ▼
-       ┌─────────────────────┐
-       │     🥉 BRONZE       │
-       │      RAW DATA       │
-       └──────────┬──────────┘
-                  │
-               PySpark
-                  │
-                  ▼
-       ┌─────────────────────┐
-       │     🥈 SILVER       │
-       │ CLEANED & VALIDATED │
-       │        DATA         │
-       └──────────┬──────────┘
-                  │
-             Joins + KPIs
-                  │
-                  ▼
-       ┌─────────────────────┐
-       │      🥇 GOLD        │
-       │   BUSINESS KPIs     │
-       └──────────┬──────────┘
-                  │
-                  ▼
-       ┌─────────────────────┐
-       │      POWER BI       │
-       │     DASHBOARD       │
-       └─────────────────────┘
-🏗️ Architecture
+- Multi-source data ingestion
+- Bronze/Silver/Gold architecture
+- PySpark-based data cleaning
+- Schema and data-type standardization
+- Data validation
+- Null and duplicate handling
+- Cross-dataset integration
+- Business KPI aggregation
+- Power BI reporting
 
-The project uses the following architecture:
+---
 
-Source Systems → Fabric Data Pipeline → Bronze → Silver → Gold → Power BI
+## Architecture
 
-Technologies Used
-Component	Technology
-Cloud Platform	Microsoft Azure
-Data Platform	Microsoft Fabric
-Data Ingestion	Fabric Data Pipeline
-Storage	Fabric Lakehouse
-Processing	PySpark
-Table Format	Delta Lake
-Architecture	Medallion Architecture
-Visualization	Power BI
-Version Control	GitHub
-📂 Data Sources
+The solution follows the **Medallion Architecture** using Microsoft Fabric.
 
-The project integrates three retail datasets.
+```mermaid
+flowchart LR
+    A[Orders<br/>CSV]
+    B[Returns<br/>Excel]
+    C[Inventory<br/>JSON]
 
-1. Orders
+    A --> D[Fabric Data Pipeline]
+    B --> D
+    C --> D
 
-Format: CSV
+    D --> E[Bronze<br/>Raw Data]
+    E --> F[PySpark<br/>Transformation]
+    F --> G[Silver<br/>Cleaned Data]
+    G --> H[Data Integration]
+    H --> I[Gold<br/>Business KPIs]
+    I --> J[Power BI<br/>Analytics]
+```
 
-The Orders dataset contains information such as:
+---
 
-Order ID
-Customer ID
-Product Name
-Quantity
-Order Date
-Order Amount
-Delivery Status
-Payment Mode
-Shipping Address
-Email
-Promo Code
-Feedback Score
+## Technology Stack
 
-Example data-quality issues include:
+| Area | Technology |
+|---|---|
+| Cloud Platform | Microsoft Azure |
+| Data Platform | Microsoft Fabric |
+| Data Ingestion | Fabric Data Pipeline |
+| Storage | Fabric Lakehouse |
+| Processing | PySpark |
+| Table Format | Delta Lake |
+| Architecture | Medallion Architecture |
+| Visualization | Power BI |
+| Version Control | GitHub |
 
-Quantity:
-1
-two
-three
+---
 
-Order Amount:
-$700
-INR 72000
-Rs. 25000
-350USD
+## Data Sources
 
-Dates:
-2023/07/01
-01-07-2023
-2023.07.01
-2. Returns
+The pipeline integrates three retail datasets.
 
-Format: Excel
+### Orders
 
-The Returns dataset contains information such as:
+**Format:** CSV
 
-Return ID
-Order ID
-Customer ID
-Product
-Return Reason
-Return Date
-Refund Status
-Pickup Address
-Return Amount
-3. Inventory
+The Orders dataset contains attributes including:
 
-Format: JSON
+- Order ID
+- Customer ID
+- Product Name
+- Quantity
+- Order Date
+- Order Amount
+- Delivery Status
+- Payment Mode
+- Shipping Address
+- Email
+- Promo Code
+- Feedback Score
+
+### Returns
+
+**Format:** Excel
+
+The Returns dataset contains attributes including:
+
+- Return ID
+- Order ID
+- Customer ID
+- Product
+- Return Reason
+- Return Date
+- Refund Status
+- Pickup Address
+- Return Amount
+
+### Inventory
+
+**Format:** JSON
 
 The Inventory dataset contains:
 
-Product ID
-Product Name
-Stock
-Last Stocked Date
-Warehouse
-Cost Price
-Availability
+- Product ID
+- Product Name
+- Stock
+- Last Stocked
+- Warehouse
+- Cost Price
+- Availability
 
-Example raw values include:
+---
 
-Stock:
-12
-20
-twenty
-fifteen
+# Bronze Layer
 
-Cost Price:
-$700
-INR 72000
-Rs. 25000
-350USD
-🥉 Bronze Layer — Raw Data
+The Bronze layer is the raw ingestion layer.
 
-The Bronze layer is the landing layer for source data.
+Source files are loaded into the Microsoft Fabric Lakehouse using a **Fabric Data Pipeline** and **Copy Data activities**.
 
-A Microsoft Fabric Data Pipeline is used to ingest the source files into the Fabric Lakehouse using Copy Data activities.
+### Sources
 
-Orders CSV ───────┐
-Returns Excel ────┼──► Fabric Data Pipeline
-Inventory JSON ───┘
-                         │
-                         ▼
-                      Bronze
-Objectives
-Preserve the original source data
-Maintain a raw historical copy
-Enable reprocessing
-Support auditing
-Separate ingestion from transformation
-Provide a reliable starting point for downstream processing
+| Dataset | Source Format |
+|---|---|
+| Orders | CSV |
+| Returns | Excel |
+| Inventory | JSON |
 
-The Bronze layer intentionally performs minimal transformation.
+### Objectives
 
-🥈 Silver Layer — Data Cleaning and Transformation
+- Preserve incoming source data
+- Maintain a raw representation of the datasets
+- Separate ingestion from transformation
+- Provide a reliable source for downstream processing
+- Support reprocessing when required
 
-The Silver layer converts raw data into clean, standardized, and analytics-ready datasets.
+The Bronze layer performs minimal transformation so that source information remains available for subsequent processing.
 
-PySpark notebooks perform the data quality and transformation operations.
+---
 
-Main Data Quality Operations
-Column Standardization
+# Silver Layer
 
-Raw column names such as:
+The Silver layer contains cleaned, standardized, and validated datasets.
 
-Order_ID
-Cust_ID
-Product_Name
-Order_Amount
+**PySpark** is used to perform data-quality and transformation operations.
 
-are standardized to:
+### Data Quality Transformations
 
-OrderID
-CustomerID
-ProductName
-OrderAmount
-Date Standardization
+#### Schema Standardization
 
-Multiple date formats are handled and converted into proper Spark date values.
+Source column names are converted into consistent analytical names.
+
+| Source Column | Silver Column |
+|---|---|
+| `Order_ID` | `OrderID` |
+| `Cust_ID` | `CustomerID` |
+| `Product_Name` | `ProductName` |
+| `Order_Amount` | `OrderAmount` |
+| `Delivery_Status` | `DeliveryStatus` |
+| `Payment_Mode` | `PaymentMode` |
+
+#### Data Type Standardization
+
+| Attribute | Target Type |
+|---|---|
+| Quantity | Integer |
+| OrderAmount | Double |
+| OrderDate | Date |
+| FeedbackScore | Double |
+| Stock | Integer |
+| CostPrice | Double |
+| Available | Boolean |
+
+#### Date Standardization
+
+Multiple source date formats are parsed into a consistent Spark `date` type.
 
 Examples:
 
+```text
 2023/07/01
 01-07-2023
 07/01/2023
 2023.07.01
+```
 
-are standardized into a consistent date representation.
+#### Currency Normalization
 
-Currency Cleaning
-
-Currency symbols and text are removed before converting the values to numeric types.
-
-Example:
-
-$700
-INR 72000
-Rs. 25000
-350USD
-
-becomes:
-
-700.0
-72000.0
-25000.0
-350.0
-
-This allows numerical aggregation using Spark functions such as:
-
-sum()
-avg()
-Quantity Normalization
-
-Text-based quantities are converted into integers.
-
-Example:
-
-one   → 1
-two   → 2
-three → 3
-Email Validation
-
-Email addresses are validated using regular expressions.
-
-Valid email addresses are retained, while invalid values are converted to NULL.
-
-Address Cleaning
-
-Special characters are removed from shipping addresses while retaining useful characters such as:
-
-Letters
-Numbers
-Spaces
-Commas
-Periods
-Hyphens
-Null Handling
-
-Missing values are handled according to the meaning of the field.
+Currency symbols and textual prefixes are removed before numeric conversion.
 
 Examples:
 
+```text
+$700       → 700.0
+INR 72000  → 72000.0
+Rs. 25000  → 25000.0
+350USD     → 350.0
+```
+
+#### Quantity Normalization
+
+Text-based quantities are converted to integers.
+
+```text
+one    → 1
+two    → 2
+three  → 3
+```
+
+#### Email Validation
+
+Email values are validated using a regular-expression pattern.
+
+Invalid values are converted to `NULL`.
+
+#### Address Cleaning
+
+Special characters are removed from shipping addresses while preserving useful address characters such as:
+
+- Letters
+- Numbers
+- Spaces
+- Commas
+- Periods
+- Hyphens
+
+#### Null Handling
+
+Missing values are handled based on the meaning of each attribute.
+
+Examples:
+
+```text
 Quantity        → 0
 OrderAmount     → 0.0
 DeliveryStatus  → unknown
 PaymentMode     → unknown
+```
 
-Critical fields such as CustomerID and ProductName are validated before being retained.
+Critical fields such as `CustomerID` and `ProductName` are validated before being retained.
 
-Duplicate Removal
+#### Duplicate Handling
 
-Duplicate Orders are removed using:
+Duplicate orders are removed using `OrderID`.
 
+```python
 .dropDuplicates(["OrderID"])
+```
 
-This ensures that the Orders Silver table maintains a unique order-level grain.
+---
 
-Silver Tables
+## Silver Tables
 
-The cleaned data is stored as Delta tables:
+The cleaned datasets are stored as Delta tables:
 
+```text
 silver_orders
 silver_returns
 silver_inventory
-Silver Inventory Schema
+```
 
-The final inventory table contains:
+### Silver Inventory Schema
 
-product_id
-ProductName
-Stock
-LastStocked
-CostPrice
-Warehouse
-Available
+| Column | Data Type |
+|---|---|
+| `product_id` | String |
+| `ProductName` | String |
+| `Stock` | Integer |
+| `LastStocked` | Date |
+| `CostPrice` | Double |
+| `Warehouse` | String |
+| `Available` | Boolean |
 
-with appropriate data types:
+---
 
-Stock       → Integer
-LastStocked → Date
-CostPrice   → Double
-Warehouse   → String
-Available   → Boolean
-🥇 Gold Layer — Business Aggregation
+# Gold Layer
 
-The Gold layer combines the cleaned Silver tables and applies business logic.
+The Gold layer contains business-ready analytical data.
 
-The following tables are integrated:
+The cleaned Silver datasets are integrated using Spark joins.
 
-silver_orders
-       │
-       ├──── OrderID ────► silver_returns
-       │
-       └── ProductName ──► silver_inventory
+```mermaid
+flowchart LR
+    A[silver_orders]
+    B[silver_returns]
+    C[silver_inventory]
 
-The result is an enriched dataset containing order, return, and inventory information.
+    A -->|OrderID| D[Enriched Dataset]
+    B -->|OrderID| D
+    A -->|ProductName| D
+    C -->|ProductName| D
 
-📊 Gold Table Grain
+    D --> E[Product + OrderMonth]
+    E --> F[Gold KPIs]
+```
 
-The Gold table is maintained at:
+---
 
-ProductName + OrderMonth
+## Data Integration
 
-grain.
+### Orders + Returns
 
-This means each row represents the KPIs for a specific product during a specific month.
+Orders and Returns are joined using:
 
-Example:
-
-ProductName       OrderMonth
---------------------------------
-Apple iPhone13    2023-06
-Samsung Galaxy    2023-07
-Oneplus Nord      2023-07
-📈 Business KPIs
-
-The Gold layer calculates the following metrics:
-
-KPI	Description
-Total Orders	Number of unique orders
-Unique Customers	Number of distinct customers
-Total Returns	Number of unique returns
-Return Rate	Percentage of orders that were returned
-Total Revenue	Total order amount
-Average Order Value	Average value of an order
-Total Stock	Inventory quantity
-Average Cost	Average product cost
-Net Profit	Project-defined profitability metric
-Return Rate
-
-The return rate is calculated as:
-
-Return Rate =
-(Total Returns / Total Orders) × 100
-Total Revenue
-Total Revenue = SUM(OrderAmount)
-Average Order Value
-Average Order Value =
-Total Revenue / Total Orders
-🔗 Data Integration
-
-The Gold transformation uses Spark joins.
-
-Orders → Returns
-
-The tables are joined using:
-
+```text
 OrderID
+```
 
-A LEFT JOIN is used so that orders without returns are not removed.
+A **LEFT JOIN** is used so that orders without return records remain in the enriched dataset.
 
-Orders
-   │
-   │ OrderID
-   ▼
-Returns
-Orders → Inventory
+### Orders + Inventory
 
 Orders are joined with Inventory using:
 
+```text
 ProductName
-Orders
-   │
-   │ ProductName
-   ▼
-Inventory
+```
 
-Table aliases are used to avoid column ambiguity:
+Table aliases are used to avoid ambiguity when columns with the same name exist across multiple datasets.
 
-orders.alias("o")
-returns.alias("r")
-inventory.alias("i")
-🧮 PySpark Processing
+Example:
 
-Example Gold aggregation:
+```python
+orders = spark.table("silver_orders").alias("o")
+returns = spark.table("silver_returns").alias("r")
+inventory = spark.table("silver_inventory").alias("i")
+```
 
-df_kpi = (
-    df_enriched
-    .groupBy("ProductName", "OrderMonth")
-    .agg(
-        countDistinct("OrderID").alias("Total_Orders"),
-        countDistinct("CustomerID").alias("Unique_Customers"),
-        countDistinct("ReturnID").alias("Total_Returns"),
-        round(
-            (countDistinct("ReturnID") /
-             countDistinct("OrderID")) * 100,
-            2
-        ).alias("Return_Rate_%"),
-        round(sum("OrderAmount"), 2).alias("Total_Revenue"),
-        round(avg("OrderAmount"), 2).alias("Avg_Order_Value"),
-        sum("Stock").alias("Total_Stock"),
-        round(avg("CostPrice"), 2).alias("Avg_Cost")
-    )
-)
+Explicit column selection is then used before aggregation to ensure that the final dataset contains unambiguous fields.
 
-The final Gold table is stored as:
+---
 
+# Gold Data Grain
+
+The Gold dataset is aggregated at:
+
+```text
+ProductName + OrderMonth
+```
+
+This means each Gold record represents the calculated metrics for a specific product during a specific month.
+
+`OrderMonth` is derived from `OrderDate`.
+
+Example:
+
+| ProductName | OrderMonth |
+|---|---|
+| Apple iPhone13 | 2023-06 |
+| Oneplus Nord | 2023-07 |
+| Samsung Galaxy | 2023-07 |
+
+Understanding the data grain is important because it determines how metrics such as orders, revenue, returns, and customers should be calculated.
+
+---
+
+# Business KPIs
+
+The Gold layer produces the following metrics:
+
+| KPI | Description |
+|---|---|
+| Total Orders | Number of orders |
+| Unique Customers | Distinct customers |
+| Total Returns | Number of returns |
+| Return Rate | Returns as a percentage of orders |
+| Total Revenue | Sum of order amounts |
+| Average Order Value | Average order amount |
+| Total Stock | Inventory quantity |
+| Average Cost | Average product cost |
+| Net Profit | Project-defined profitability metric |
+
+### Return Rate
+
+```text
+Return Rate =
+(Total Returns / Total Orders) × 100
+```
+
+### Total Revenue
+
+```text
+Total Revenue =
+SUM(OrderAmount)
+```
+
+### Average Order Value
+
+```text
+Average Order Value =
+AVG(OrderAmount)
+```
+
+---
+
+# Gold Table
+
+The final analytical dataset is stored as:
+
+```text
 gold_product_month_kpis
-📊 Power BI Dashboard
+```
 
-The Gold Delta table is designed to be consumed by Power BI.
+The table is designed for downstream analytical consumption through Power BI.
 
-Potential dashboard components include:
+---
 
-KPI Cards
-Total Revenue
-Total Orders
-Unique Customers
-Return Rate
-Total Profit
-Visualizations
-Revenue by Product
-Revenue by Month
-Returns by Product
-Return Rate by Product
-Inventory by Product
-Profitability by Product
-Filters
-Product
-Order Month
+# Power BI
 
-The goal is to provide business users with an interactive view of retail performance without requiring them to work directly with the raw datasets.
+The Gold dataset provides the foundation for a retail analytics dashboard.
 
-🔄 End-to-End Pipeline
-                    SOURCE SYSTEMS
-                         │
-          ┌──────────────┼──────────────┐
-          │              │              │
-       Orders          Returns       Inventory
-        CSV             Excel           JSON
-          │              │              │
-          └──────────────┼──────────────┘
-                         │
-                         ▼
-                FABRIC DATA PIPELINE
-                         │
-                         ▼
-                     BRONZE
-                    Raw Data
-                         │
-                         ▼
-                     PySpark
-                         │
-                         ▼
-                     SILVER
-              Cleaned & Validated
-                         │
-                         ▼
-                  Spark Joins
-                         │
-                         ▼
-              Product + Month KPIs
-                         │
-                         ▼
-                      GOLD
-                  Business Data
-                         │
-                         ▼
-                    POWER BI
-                    Dashboard
-📁 Repository Structure
+### Key Metrics
+
+- Total Revenue
+- Total Orders
+- Unique Customers
+- Total Returns
+- Return Rate
+- Average Order Value
+- Inventory
+- Profitability
+
+### Potential Analysis
+
+- Revenue by Product
+- Revenue by Month
+- Returns by Product
+- Return Rate by Product
+- Inventory by Product
+- Profitability by Product
+- Order trends over time
+
+### Filters
+
+- Product
+- Order Month
+
+The dashboard provides business users with a curated analytical view without requiring direct interaction with the raw source datasets.
+
+---
+
+# End-to-End Workflow
+
+```mermaid
+flowchart LR
+    A[Source Data] --> B[Fabric Data Pipeline]
+    B --> C[Bronze]
+    C --> D[PySpark]
+    D --> E[Silver]
+    E --> F[Joins & Transformations]
+    F --> G[Gold KPIs]
+    G --> H[Power BI]
+```
+
+---
+
+# Repository Structure
+
+```text
 retail-data-engineering-fabric/
 │
 ├── README.md
@@ -517,176 +496,180 @@ retail-data-engineering-fabric/
 │
 └── data/
     └── README.md
-🚀 How to Run
-Prerequisites
-Microsoft Azure subscription
-Microsoft Fabric workspace
-Fabric Lakehouse
-Power BI
-Source datasets
-GitHub account
-Steps
-1. Create Fabric Workspace
+```
 
-Create a Microsoft Fabric workspace with appropriate capacity.
+---
 
-2. Create Lakehouse
+# Project Execution
 
-Create a Fabric Lakehouse to store the Bronze, Silver, and Gold data.
+## Prerequisites
 
-3. Configure Data Pipeline
+- Microsoft Fabric workspace
+- Fabric Lakehouse
+- Fabric Data Pipeline
+- PySpark environment
+- Power BI
+- Source datasets
 
-Create a Fabric Data Pipeline using Copy Data activities to ingest:
+## Pipeline Execution
 
-Orders CSV
-Returns Excel
-Inventory JSON
-4. Run Bronze Ingestion
+### 1. Ingest
 
-Load the source data into the Bronze layer.
+Load Orders, Returns, and Inventory source files through the Fabric Data Pipeline.
 
-5. Run Silver Notebooks
+### 2. Bronze
 
-Execute the PySpark notebooks to:
+Store the incoming data in the raw Bronze layer.
 
-Clean the data
-Standardize schemas
-Validate values
-Handle missing values
-Remove duplicates
-Convert data types
-6. Validate Silver Tables
+### 3. Transform
 
-Verify:
+Run PySpark notebooks to clean, validate, standardize, and type-cast the datasets.
 
+### 4. Silver
+
+Write the cleaned datasets as Delta tables:
+
+```text
 silver_orders
 silver_returns
 silver_inventory
-7. Run Gold Notebook
+```
 
-Join the Silver tables and calculate Product + Month KPIs.
+### 5. Integrate
 
-8. Connect Power BI
+Join the Silver datasets using `OrderID` and `ProductName`.
 
-Connect Power BI to the Gold table:
+### 6. Aggregate
 
+Generate business KPIs at the:
+
+```text
+ProductName + OrderMonth
+```
+
+grain.
+
+### 7. Gold
+
+Store the resulting analytical dataset as:
+
+```text
 gold_product_month_kpis
-9. Build Dashboard
+```
 
-Create interactive visualizations for revenue, orders, returns, inventory, and profitability.
+### 8. Analyze
 
-🧠 Key Data Engineering Concepts Demonstrated
+Connect the Gold dataset to Power BI for visualization and reporting.
 
-This project demonstrates practical knowledge of:
+---
 
-Medallion Architecture
-ETL / ELT
-Data ingestion
-Data quality
-Data validation
-Schema standardization
-Data type conversion
-Data cleaning
-Regex transformations
-Null handling
-Duplicate removal
-PySpark DataFrames
-Spark SQL functions
-Spark joins
-Aggregations
-Delta Lake
-Microsoft Fabric Lakehouse
-Data pipelines
-Business KPI development
-Power BI reporting
-GitHub version control
-⚠️ Data Quality Considerations
+# Data Quality Challenges
 
-Several data-quality challenges were intentionally handled in this project.
+| Challenge | Approach |
+|---|---|
+| Inconsistent column names | Column renaming |
+| Multiple date formats | Multi-pattern date parsing |
+| Currency symbols | Regex-based extraction |
+| Text-based quantities | Value normalization |
+| Invalid emails | Regex validation |
+| Missing values | Null handling |
+| Duplicate orders | Deduplication using `OrderID` |
+| Inconsistent categorical values | Standardization |
+| Incorrect data types | Explicit type casting |
+| Ambiguous Spark columns | Aliases and explicit projection |
 
-Examples include:
+---
 
-Inconsistent column names
-Inconsistent dates
-Currency symbols
-Text-based quantities
-Missing values
-Invalid emails
-Special characters
-Duplicate orders
-Inconsistent categorical values
+# Engineering Considerations
 
-The Silver layer acts as the data-quality boundary between raw source data and business analytics.
+## Data Grain
 
-🔍 Important Engineering Considerations
-Data Grain
+The intended grain of the major datasets is:
 
-Each layer has a different logical grain.
-
+```text
 Orders
-One record per OrderID
+→ One record per OrderID
+
 Inventory
-One record per Product
+→ One record per Product
+
 Gold
-One record per ProductName + OrderMonth
+→ One record per ProductName + OrderMonth
+```
 
-Understanding data grain is important to prevent incorrect aggregations.
+## Join Cardinality
 
-Join Duplication
+Join cardinality must be considered when integrating operational datasets.
 
-When joining a one-to-many relationship, duplicate rows can potentially inflate measures such as revenue.
+A one-to-many relationship can multiply rows and potentially inflate metrics such as revenue or order counts.
 
-For a production implementation, orders and returns should be aggregated at the appropriate grain before calculating financial metrics.
+For production implementations, fact-level data should therefore be carefully validated and aggregated at the appropriate grain before calculating financial KPIs.
 
-🔮 Future Improvements
+---
 
-The project can be extended with:
+# Key Concepts Demonstrated
 
-Incremental data ingestion
-Automated data-quality checks
-Pipeline scheduling
-Failure handling and retry mechanisms
-Data lineage
-Microsoft Purview integration
-Data governance
-Slowly Changing Dimensions
-Star schema / dimensional modeling
-Automated Power BI refresh
-CI/CD deployment
-Monitoring and alerting
-Data quality dashboards
-Historical inventory tracking
-🎯 Project Outcome
+- Microsoft Fabric
+- Fabric Lakehouse
+- Fabric Data Pipeline
+- Medallion Architecture
+- PySpark
+- Spark DataFrames
+- Delta Lake
+- ETL / ELT
+- Data ingestion
+- Data quality
+- Schema standardization
+- Data validation
+- Data type conversion
+- Regex transformations
+- Null handling
+- Duplicate handling
+- Spark joins
+- Data aggregation
+- Business KPI development
+- Power BI
+- GitHub
 
-The project demonstrates how Microsoft Fabric can be used to build an end-to-end data engineering solution that transforms heterogeneous and low-quality retail data into reliable business insights.
+---
 
-The final architecture provides:
+# Future Improvements
 
-Reliable ingestion
-       +
-Data quality
-       +
-Scalable transformation
-       +
-Business aggregation
-       +
-Interactive analytics
+Potential production-oriented enhancements include:
 
-resulting in a complete retail data engineering and analytics pipeline.
+- Incremental data ingestion
+- Pipeline scheduling
+- Automated data-quality validation
+- Pipeline monitoring
+- Failure handling and retry mechanisms
+- Data lineage
+- Data governance
+- Historical inventory tracking
+- Dimensional modeling
+- Star schema implementation
+- Slowly Changing Dimensions
+- Automated Power BI refresh
+- CI/CD deployment
+- Data quality monitoring dashboards
 
-👨‍💻 Author
+---
 
-Lakkshanth
+# Project Outcome
 
-Technologies
+This project demonstrates an end-to-end approach to building a retail data engineering pipeline using Microsoft Fabric.
 
-Microsoft Fabric Azure PySpark Delta Lake Lakehouse Power BI GitHub
+The solution separates:
 
-⭐ If you found this project useful, feel free to explore the notebooks and architecture documentation.
+**Raw Data → Data Quality → Business Transformation → Analytics**
 
-### One small thing before you commit it
+through the Bronze, Silver, and Gold layers.
 
-The README contains:
+The final Gold dataset provides a structured foundation for analyzing retail performance across **products and time** using Power BI.
 
-```markdown
-![Architecture](architecture/architecture.png)
+---
+
+## Author
+
+**Lakkshanth**
+
+`Microsoft Fabric` · `PySpark` · `Azure` · `Delta Lake` · `Power BI` · `Data Engineering`
