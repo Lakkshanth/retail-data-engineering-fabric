@@ -451,31 +451,31 @@ The dashboard provides business users with a curated analytical view without req
 ## Implementation Screenshots
 
 ### Fabric Data Pipeline
-![Fabric Data Pipeline](screenshots/fabric_pipeline.png)
+![Fabric Data Pipeline](Screenshots/fabric_pipeline.png)
 
 ### Bronze Orders
-![Bronze Orders](screenshots/bronze_orders.png)
+![Bronze Orders](Screenshots/bronze_orders.png)
 
 ### Bronze Returns
-![Bronze Returns](screenshots/bronze_returns.png)
+![Bronze Returns](Screenshots/bronze_returns.png)
 
 ### Bronze Inventory
-![Bronze Inventory](screenshots/bronze_inventory.png)
+![Bronze Inventory](Screenshots/bronze_inventory.png)
 
 ### Silver Orders
-![Silver Orders](screenshots/silver_orders.png)
+![Silver Orders](Screenshots/silver_orders.png)
 
 ### Silver Returns
-![Silver Returns](screenshots/silver_returns.png)
+![Silver Returns](Screenshots/silver_returns.png)
 
 ### Silver Inventory
-![Silver Inventory](screenshots/silver_inventory.png)
+![Silver Inventory](Screenshots/silver_inventory.png)
 
 ### Gold KPI Layer
-![Gold KPIs](screenshots/gold_kpis.png)
+![Gold KPIs](Screenshots/gold_kpis.png)
 
 ### Power BI Dashboard
-![Power BI Dashboard](screenshots/powerbi_dashboard.png)
+![Power BI Dashboard](Screenshots/powerbi_dashboard.png)
 
 ---
 
